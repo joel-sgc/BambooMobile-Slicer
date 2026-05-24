@@ -1,15 +1,17 @@
 services:
   orcaslicer-daemon:
     # For Raspberry Pi / ARM64, comment out the linuxserver image and uncomment the matszwe02 image
-    image: lscr.io/linuxserver/orcaslicer:latest
-    # image: matszwe02/orcaslicer-arm:latest
+    # image: lscr.io/linuxserver/orcaslicer:latest
+    image: matszwe02/orcaslicer-arm:latest
     container_name: orcaslicer-daemon
     environment:
       - PUID=911
       - PGID=911
       - TZ=America/Chicago
     volumes:
-      # Maps your Go API's working directory into the container
+      # This satisfies the startup script and holds the app settings
+      - ~/.orcaslicer_docker:/config
+      # This keeps our Go API integration exactly where it needs to be
       - /tmp/slicer_data:/config/workspace
     ports:
       # Optional: Maps the web GUI for visual debugging.

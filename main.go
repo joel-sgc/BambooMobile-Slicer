@@ -51,8 +51,9 @@ func executeSlicer(inputFile string, outputFile string) error {
 		"-u", "abc",
 		"-e", "WAYLAND_DISPLAY=wayland-1",
 		"-e", "XDG_RUNTIME_DIR=/config/.XDG",
+		"-e", "DISPLAY=:1",
 		"orcaslicer-daemon",
-		"/opt/orcaslicer/bin/orca-slicer",
+		"/opt/orca-slicer/bin/orca-slicer",
 		"--slice", "0",
 		"--export-3mf", containerOutput,
 		containerInput)
@@ -141,7 +142,7 @@ func main() {
 	// Format the address string dynamically
 	address := fmt.Sprintf("0.0.0.0:%s", port)
 	
-	fmt.Printf("Slicer API running on http://%s", address)
+	fmt.Printf("Slicer API running on http://%s\n", address)
 	
 	err := http.ListenAndServe(address, nil)
 	if err != nil {

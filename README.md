@@ -39,23 +39,21 @@ Create a file named `docker-compose.yml` in your project root directory and past
 
 ```
 services:
-  orcaslicer-daemon: # Standard x86_64 (PC, NAS, VPS)
-    image: lscr.io/linuxserver/orcaslicer:latest
-
-    # ARM64 / Raspberry Pi (Uncomment line below and comment out the linuxserver line if on a Pi)
-    # image: matszwe02/orcaslicer-arm:latest
-
+  orcaslicer-daemon:
+    # For Raspberry Pi / ARM64, comment out the linuxserver image and uncomment the matszwe02 image
+    # image: lscr.io/linuxserver/orcaslicer:latest
+    image: matszwe02/orcaslicer-arm:latest
     container_name: orcaslicer-daemon
     environment:
       - PUID=911
       - PGID=911
       - TZ=America/Chicago
     volumes:
+      - ~/.orcaslicer_docker:/config
       - /tmp/slicer_data:/config/workspace
     ports:
       - 3000:3000
     restart: unless-stopped
-
 ```
 
 Launch the background daemon using:
@@ -71,7 +69,13 @@ docker compose up -d
 Instead of running raw source code in production, compile the application into a standalone static binary. Run this from inside your repository folder:
 
 ```
-go build -o slicer-server .
+go build -o slicer-x86_64 .
+```
+
+or alternatively to compile for an ARM based system:
+
+```
+GOOS=linux GOARCH=arm64 go build -o slicer-arm64 .
 ```
 
 ### Step 3: Configure systemd (Systemctl Service)
@@ -81,7 +85,7 @@ To ensure the server automatically boots on system startup and restarts itself i
 Create a new service configuration file:
 
 ```
-sudo nano /etc/systemd/system/slicer-api.service
+sudo nano /etc/systemd/system/BambooMobile-Slicer.service
 ```
 
 Paste the following block into the file. _Make sure to update the `User`, `WorkingDirectory`, and executable path to match your environment:_
@@ -95,8 +99,9 @@ Requires=docker.service
 [Service]
 Type=simple
 User=YOUR_LINUX_USER
-WorkingDirectory=/PATH/EXAMPLE
-ExecStart=/PATH/EXAMPLE/slicer-server
+WorkingDirectory=/PATH/TO/BambooMobile-Slicer
+ExecStart=/PATH/TO/BambooMobile-Slicer/slicer-x86_64
+# ExecStart=/PATH/TO/BambooMobile-Slicer/slicer-arm64
 Environment="PORT=8080"
 Restart=always
 RestartSec=5
@@ -113,13 +118,13 @@ Reload the systemd manager configuration, enable the service to launch on startu
 
 ```
 sudo systemctl daemon-reload
-sudo systemctl enable --now slicer-api
+sudo systemctl enable --now BambooMobile-Slicer
 ```
 
 To track the live output logs of the server as jobs are processed:
 
 ```
-journalctl -u slicer-api -f
+journalctl -u BambooMobile-Slicer -f
 ```
 
 ---
@@ -128,7 +133,7 @@ journalctl -u slicer-api -f
 
 ### Custom Ports
 
-You can change the port the server listens on by modifying the `Environment="PORT=8080"` line inside your `/etc/systemd/system/slicer-api.service` file. Run `sudo systemctl daemon-reload && sudo systemctl restart slicer-api` to apply changes.
+You can change the port the server listens on by modifying the `Environment="PORT=8080"` line inside your `/etc/systemd/system/BambooMobile-Slicer.service` file. Run `sudo systemctl daemon-reload && sudo systemctl restart BambooMobile-Slicer` to apply changes.
 
 ### Forcing Printer Profiles (Optional)
 
