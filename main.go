@@ -124,8 +124,7 @@ func streamFileToClient(w http.ResponseWriter, filePath string) {
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Content-Disposition", `attachment; filename="print_job.gcode.3mf"`)
 
-	io.Copy(w, file)
-}
+	io.Copy(w, file)}
 
 func main() {
 	// Ensure the shared directory exists
